@@ -114,10 +114,14 @@ public class MavenResolver {
     }
 
     public void addRemoteRepo(String name, String url) {
+        addRemoteRepo(name, url, null, null);
+    }
+
+    public void addRemoteRepo(String name, String url, String username, String password) {
         if (DEFAULT_RESOLVER_NAME.equals(name))
             throw new IllegalArgumentException("Illegal repository name, cannot use '" + DEFAULT_RESOLVER_NAME + "'.");
 
-        this.repos.add(CommonRepositories.maven(name, url));
+        this.repos.add(CommonRepositories.maven(name, url, username, password));
     }
 
     private ChainResolver searchAllReposResolver(Set<String> repos) {
@@ -458,13 +462,21 @@ public class MavenResolver {
 
     @LineMagic(aliases = { "mavenRepo" })
     public void addMavenRepo(List<String> args) {
-        MagicsArgs schema = MagicsArgs.builder().required("id").required("url").build();
+        MagicsArgs schema = MagicsArgs.builder()
+                .required("id")
+                .required("url")
+                .keyword("username")
+                .keyword("password")
+                .onlyKnownKeywords()
+                .build();
         Map<String, List<String>> vals = schema.parse(args);
 
         String id = vals.get("id").get(0);
         String url = vals.get("url").get(0);
+        String username = vals.containsKey("username") ? vals.get("username").get(0) : null;
+        String password = vals.containsKey("password") ? vals.get("password").get(0) : null;
 
-        this.addRemoteRepo(id, url);
+        this.addRemoteRepo(id, url, username, password);
     }
 
     @CellMagic

@@ -5,6 +5,8 @@ import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 
 public class CommonRepositories {
@@ -13,12 +15,32 @@ public class CommonRepositories {
     protected static final String MAVEN_POM_PATTERN = MAVEN_PATTERN_PREFIX + ".pom";
 
     public static DependencyResolver maven(String name, String urlRaw) {
+        return maven(name, urlRaw, null, null);
+    }
+
+    public static DependencyResolver maven(String name, String urlRaw, String username, String password) {
         IBiblioResolver resolver = new IBiblioResolver();
         resolver.setM2compatible(true);
         resolver.setUseMavenMetadata(true);
         resolver.setUsepoms(true);
 
-        resolver.setRoot(urlRaw);
+        // If authentication is provided, embed it in the URL
+        String finalUrl = urlRaw;
+        if (username != null && password != null) {
+            try {
+                URL url = new URL(urlRaw);
+                // Reconstruct URL with authentication: https://username:password@host/path
+                finalUrl = url.getProtocol() + "://" + username + ":" + password + "@" + 
+                          url.getHost() + 
+                          (url.getPort() != -1 ? ":" + url.getPort() : "") + 
+                          url.getPath() +
+                          (url.getQuery() != null ? "?" + url.getQuery() : "");
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException("Invalid repository URL: " + urlRaw, e);
+            }
+        }
+
+        resolver.setRoot(finalUrl);
         resolver.setName(name);
 
         return resolver;

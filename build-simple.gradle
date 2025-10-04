@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.spencerpark'
+version = '1.3.0'
+
+compileJava {
+    sourceCompatibility = 17
+    targetCompatibility = 17
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+    mavenLocal()
+}
+
+dependencies {
+    implementation group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.3.0'
+    implementation group: 'org.apache.ivy', name: 'ivy', version: '2.5.0-rc1'
+    implementation group: 'org.apache.maven', name: 'maven-model-builder', version: '3.6.0'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    // Include all dependencies in the jar (fat jar)
+    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    
+    manifest {
+        attributes('Main-class': 'io.github.spencerpark.ijava.IJava')
+    }
+    
+    // Avoid duplicate files
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

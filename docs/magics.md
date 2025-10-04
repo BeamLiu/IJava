@@ -81,6 +81,21 @@ Add a maven repository to search for when using [addMavenDependencies](#addmaven
 *   **arguments**:
     *   repository id
     *   repository url
+*   **optional keywords**:
+    *   `--username` - username for authentication
+    *   `--password` - password for authentication
+
+**Examples:**
+
+```java
+// Add a public repository
+%mavenRepo oss-sonatype-snapshots https://oss.sonatype.org/content/repositories/snapshots/
+
+// Add a private repository with authentication
+%mavenRepo my-private-repo https://my-repo.com/maven --username myuser --password mypass
+```
+
+**Note:** Authentication is implemented by embedding credentials in the repository URL (https://username:password@host/path). This is compatible with Apache Ivy's IBiblioResolver.
 
 
 ### loadFromPOM
